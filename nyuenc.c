@@ -10,7 +10,7 @@
 
 int main(int argc, char* argv[]){
     if(argc == 0) return 0;
-    int ch = 0, prev = 0;
+    int ch = -1, prev = -1;
     unsigned char count = 0;
     int arg = 0;
     FILE* fd = NULL;
@@ -23,7 +23,7 @@ int main(int argc, char* argv[]){
             ch = fgetc(fd);
             while(ch != EOF){ 
                 if(prev != ch) {
-                    if(prev != 0) {
+                    if(prev != -1) {
                         fwrite(&prev, 1, 1, stdout);
                         fwrite(&count, 1, 1, stdout);
                     }
