@@ -8,18 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define B(x) S_to_binary_(#x)
-
-static inline unsigned long long S_to_binary_(const char *s)
-{
-        unsigned long long i = 0;
-        while (*s) {
-                i <<= 1;
-                i += *s++ - '0';
-        }
-        return i;
-}
-
 int main(int argc, char* argv[]){
     if(argc == 0) return 0;
     int ch = 0, prev = 0;
