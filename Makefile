@@ -1,4 +1,4 @@
-CC=gcc
+CC=gcc -pthread
 CFLAGS=-g -pedantic -std=gnu17 -Wall -Werror -Wextra
 
 .PHONY: all
