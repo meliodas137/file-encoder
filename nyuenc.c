@@ -92,6 +92,33 @@ void doSeqEnc(int argc, char* argv[]) {
     return;
 }
 
+void *parallelTask(void *idx){
+    char* index = (char *)idx;
+    int start = (int)(*index);
+    while(start < MAX_TASKS && tasks[start] != NULL) {
+        char* st = tasks[start];
+        unsigned char count = 0;
+        int i = 0, j = 0, ch = -1, prev = -1;;
+        char* comp = malloc(2*4096);
+        while(i < size[start]) {
+            ch = st[i++];
+            if(prev != -1 && prev != ch){
+                comp[j++] = prev;
+                comp[j++] = count;
+                count = 0;
+            }
+            prev = ch;
+            count++;
+        }
+        comp[j++] = prev;
+        comp[j++] = count;
+        completed[start] = comp;
+        completed_size[start] = j;
+        // printf("parallelising the encoding %d %s\n", start, comp);
+        start += num_threads;
+    }
+    pthread_exit(NULL);
+}
 
 void cleanMem(){
     int i = 0;
