@@ -7,9 +7,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
+#include <stdbool.h>
 
-int main(int argc, char* argv[]){
-    if(argc == 0) return 0;
+#define MAX_TASKS 262144
+char** tasks;
+char** completed;
+int* size;
+int* completed_size;
+int num_threads;
+
+void initMem(){
+    int i = 0;
+    tasks = malloc(MAX_TASKS*sizeof(char*));
+    while(i < MAX_TASKS) tasks[i++] = NULL; 
+    completed = malloc(MAX_TASKS*sizeof(char*));
+    i = 0;
+    while(i < MAX_TASKS) completed[i++] = NULL; 
+    size = malloc(MAX_TASKS*sizeof(int));
+    completed_size = malloc(MAX_TASKS*sizeof(int));
+}
+
+
 void doSeqEnc(int argc, char* argv[]) {
     int ch = -1, prev = -1;
     unsigned char count = 0;
@@ -40,6 +59,19 @@ void doSeqEnc(int argc, char* argv[]) {
     fwrite(&prev, 1, 1, stdout);
     fwrite(&count, 1, 1, stdout);
     fflush(stdout);
+    return;
+}
+
+
+void cleanMem(){
+    int i = 0;
+    while(tasks[i] != NULL) free(tasks[i++]);
+    i = 0;
+    while(completed[i] != NULL) free(completed[i++]);
+    free(tasks);
+    free(completed);
+    free(size);
+    free(completed_size);
     return;
 }
 
