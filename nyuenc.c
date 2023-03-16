@@ -120,6 +120,31 @@ void *parallelTask(void *idx){
     pthread_exit(NULL);
 }
 
+void colateRes(){
+    int i = 0;
+    char prev = -1;
+    unsigned char count = 0;
+    while(completed[i] != NULL) {
+        char* st = completed[i];
+        int j = 0;
+        while(j < completed_size[i]){
+            if(prev != st[j] && prev != -1) {
+                fwrite(&prev, 1, 1, stdout);
+                fwrite(&count, 1, 1, stdout);
+                count = 0;
+            }
+            count += st[j+1];
+            prev = st[j];
+            j += 2;
+        }
+        i++;
+    }
+    fwrite(&prev, 1, 1, stdout);
+    fwrite(&count, 1, 1, stdout);
+    fflush(stdout);
+    return;
+}
+
 void cleanMem(){
     int i = 0;
     while(tasks[i] != NULL) free(tasks[i++]);
