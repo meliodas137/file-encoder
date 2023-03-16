@@ -16,7 +16,6 @@ char** tasks;
 char** completed;
 int* size;
 int* completed_size;
-int num_threads;
 int nextTask = 0;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -166,12 +165,9 @@ void cleanMem(){
 void doParallelEnc(int argc, char* argv[]){
     initMem();
     createTasks(argc, argv);
-    num_threads = atoi(argv[2]);
-    // int thread_args[num_threads];
+    int num_threads = atoi(argv[2]);
     pthread_t threads[num_threads];
     for(int i = 0; i < num_threads; i++) {
-        // thread_args[i] = i;
-        // printf("Creating thread %d\n", i);
         pthread_create(&threads[i], NULL, parallelTask, NULL);
     }
     for(int i = 0; i< num_threads; i++){
@@ -195,4 +191,3 @@ int main(int argc, char* argv[]){
     encode(argc, argv);
     return 0;
 }
-
