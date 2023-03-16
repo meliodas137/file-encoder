@@ -17,6 +17,8 @@ char** completed;
 int* size;
 int* completed_size;
 int num_threads;
+int nextTask = 0;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void initMem(){
     int i = 0;
@@ -50,7 +52,6 @@ void createTasks(int argc, char* argv[]){
                 else free(chunk);
                 break;
             }
-            // printf("Chunk found %d : %d\n", ret, iTask);
             size[iTask] = ret;
             tasks[iTask++] = chunk;
         }
@@ -92,15 +93,18 @@ void doSeqEnc(int argc, char* argv[]) {
     return;
 }
 
-void *parallelTask(void *idx){
-    char* index = (char *)idx;
-    int start = (int)(*index);
-    while(start < MAX_TASKS && tasks[start] != NULL) {
-        char* st = tasks[start];
+void *parallelTask(){
+    int idx = -1;
+    pthread_mutex_lock(&mutex);
+    idx = nextTask;
+    nextTask++;
+    pthread_mutex_unlock(&mutex);
+    while(idx != -1 && idx < MAX_TASKS && tasks[idx] != NULL) {
+        char* st = tasks[idx];
         unsigned char count = 0;
         int i = 0, j = 0, ch = -1, prev = -1;;
         char* comp = malloc(2*4096);
-        while(i < size[start]) {
+        while(i < size[idx]) {
             ch = st[i++];
             if(prev != -1 && prev != ch){
                 comp[j++] = prev;
@@ -112,10 +116,12 @@ void *parallelTask(void *idx){
         }
         comp[j++] = prev;
         comp[j++] = count;
-        completed[start] = comp;
-        completed_size[start] = j;
-        // printf("parallelising the encoding %d %s\n", start, comp);
-        start += num_threads;
+        completed[idx] = comp;
+        completed_size[idx] = j;
+        pthread_mutex_lock(&mutex);
+        idx = nextTask;
+        nextTask++;
+        pthread_mutex_unlock(&mutex);
     }
     pthread_exit(NULL);
 }
@@ -161,12 +167,12 @@ void doParallelEnc(int argc, char* argv[]){
     initMem();
     createTasks(argc, argv);
     num_threads = atoi(argv[2]);
-    int thread_args[num_threads];
+    // int thread_args[num_threads];
     pthread_t threads[num_threads];
     for(int i = 0; i < num_threads; i++) {
-        thread_args[i] = i;
+        // thread_args[i] = i;
         // printf("Creating thread %d\n", i);
-        pthread_create(&threads[i], NULL, parallelTask, &thread_args[i]);
+        pthread_create(&threads[i], NULL, parallelTask, NULL);
     }
     for(int i = 0; i< num_threads; i++){
         pthread_join(threads[i], NULL);
