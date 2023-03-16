@@ -10,37 +10,50 @@
 
 int main(int argc, char* argv[]){
     if(argc == 0) return 0;
+void doSeqEnc(int argc, char* argv[]) {
     int ch = -1, prev = -1;
     unsigned char count = 0;
     int arg = 0;
-    FILE* fd = NULL;
     while(++arg < argc) {
         char* fileName = argv[arg];
         if(fileName == NULL) continue;
-        fd = fopen(fileName, "r");
-        if(fd == NULL) fprintf(stderr, "File not found");
-        else {
-            ch = fgetc(fd);
-            while(ch != EOF){ 
-                if(prev != ch) {
-                    if(prev != -1) {
-                        fwrite(&prev, 1, 1, stdout);
-                        fwrite(&count, 1, 1, stdout);
-                    }
-                    prev = ch;
-                    count = 1;
-                }
-                else {
-                    count++;
-                }
-                ch = fgetc(fd);
-            }
-            fclose(fd);
+        FILE* fd  = fopen(fileName, "r");
+        if(fd == NULL) {
+            fprintf(stderr, "File not found");
+            continue;
         }
+        ch = fgetc(fd);
+        while(ch != EOF){ 
+            if(prev != ch) {
+                if(prev != -1) {
+                    fwrite(&prev, 1, 1, stdout);
+                    fwrite(&count, 1, 1, stdout);
+                }
+                prev = ch;
+                count = 0;
+            }
+            count++;
+            ch = fgetc(fd);
+        }
+        fclose(fd);
     }
     fwrite(&prev, 1, 1, stdout);
     fwrite(&count, 1, 1, stdout);
     fflush(stdout);
+    return;
+}
+
+void encode(int argc, char* argv[]){
+    if(argc > 2 && strcmp(argv[1], "-j") == 0 ) {
+        doParallelEnc(argc, argv);
+    } else {
+        doSeqEnc(argc, argv);
+    }
+}
+
+int main(int argc, char* argv[]){
+    if(argc == 0) return 0;
+    encode(argc, argv);
     return 0;
 }
 
