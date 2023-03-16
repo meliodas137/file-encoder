@@ -3,6 +3,7 @@
 *https://man7.org/linux/man-pages/man3/fclose.3.html
 *https://www.tutorialspoint.com/cprogramming/c_file_io.htm
 *https://man7.org/linux/man-pages/man3/fwrite.3p.html
+*https://en.wikipedia.org/wiki/Pthreads
 */
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,6 +29,35 @@ void initMem(){
     completed_size = malloc(MAX_TASKS*sizeof(int));
 }
 
+void createTasks(int argc, char* argv[]){
+    int arg = 2, iTask = 0;
+    while(++arg < argc) {
+        char* fileName = argv[arg];
+        if(fileName == NULL) continue;
+        FILE* fd = fopen(fileName, "r");
+        if(fd == NULL) {
+            fprintf(stderr, "File not found");
+            continue;
+        }
+        while(1) { 
+            char *chunk = malloc(4096);
+            int ret = fread(chunk, 1, 4096, fd);
+            if(feof(fd) == true) {
+                if(ret > 0) {
+                    size[iTask] = ret;
+                    tasks[iTask++] = chunk;
+                }
+                else free(chunk);
+                break;
+            }
+            // printf("Chunk found %d : %d\n", ret, iTask);
+            size[iTask] = ret;
+            tasks[iTask++] = chunk;
+        }
+        fclose(fd);
+    }
+    return;
+}
 
 void doSeqEnc(int argc, char* argv[]) {
     int ch = -1, prev = -1;
