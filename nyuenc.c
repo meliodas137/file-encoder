@@ -132,6 +132,25 @@ void cleanMem(){
     return;
 }
 
+void doParallelEnc(int argc, char* argv[]){
+    initMem();
+    createTasks(argc, argv);
+    num_threads = atoi(argv[2]);
+    int thread_args[num_threads];
+    pthread_t threads[num_threads];
+    for(int i = 0; i < num_threads; i++) {
+        thread_args[i] = i;
+        // printf("Creating thread %d\n", i);
+        pthread_create(&threads[i], NULL, parallelTask, &thread_args[i]);
+    }
+    for(int i = 0; i< num_threads; i++){
+        pthread_join(threads[i], NULL);
+    }
+    colateRes();
+    cleanMem();
+    return;
+}
+
 void encode(int argc, char* argv[]){
     if(argc > 2 && strcmp(argv[1], "-j") == 0 ) {
         doParallelEnc(argc, argv);
