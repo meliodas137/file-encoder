@@ -17,7 +17,10 @@ char** completed;
 int* size;
 int* completed_size;
 int nextTask = 0;
+int totalTasks = MAX_TASKS;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t task_created = PTHREAD_COND_INITIALIZER;
+pthread_cond_t task_completed = PTHREAD_COND_INITIALIZER;
 
 void initMem(){
     int i = 0;
