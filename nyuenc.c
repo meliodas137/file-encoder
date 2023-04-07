@@ -178,15 +178,12 @@ void cleanMem(){
 
 void doParallelEnc(int argc, char* argv[]){
     initMem();
-    createTasks(argc, argv);
     int num_threads = atoi(argv[2]);
     pthread_t threads[num_threads];
     for(int i = 0; i < num_threads; i++) {
         pthread_create(&threads[i], NULL, parallelTask, NULL);
     }
-    for(int i = 0; i< num_threads; i++){
-        pthread_join(threads[i], NULL);
-    }
+    createTasks(argc, argv);
     colateRes();
     cleanMem();
     return;
