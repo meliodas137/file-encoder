@@ -143,10 +143,16 @@ void colateRes(){
     int i = 0;
     char prev = -1;
     unsigned char count = 0;
-    while(completed[i] != NULL) {
+    while(i < totalTasks){
+        pthread_mutex_lock(&mutex);
+        while(completed[i] == NULL) {
+            pthread_cond_wait(&task_completed, &mutex);
+        }
         char* st = completed[i];
+        int sz = completed_size[i];
+        pthread_mutex_unlock(&mutex);
         int j = 0;
-        while(j < completed_size[i]){
+        while(j < sz){
             if(prev != st[j] && prev != -1) {
                 fwrite(&prev, 1, 1, stdout);
                 fwrite(&count, 1, 1, stdout);
