@@ -105,17 +105,20 @@ void doSeqEnc(int argc, char* argv[]) {
 }
 
 void *parallelTask(){
-    int idx = -1;
-    pthread_mutex_lock(&mutex);
-    idx = nextTask;
-    nextTask++;
-    pthread_mutex_unlock(&mutex);
-    while(idx != -1 && idx < MAX_TASKS && tasks[idx] != NULL) {
+    while(1) {
+        pthread_mutex_lock(&mutex);
+        while(tasks[nextTask] == NULL)
+            pthread_cond_wait(&task_created, &mutex);
+        int idx = nextTask++;
         char* st = tasks[idx];
+        int sz = size[idx];
+        pthread_mutex_unlock(&mutex);
+
+        
         unsigned char count = 0;
         int i = 0, j = 0, ch = -1, prev = -1;;
         char* comp = malloc(2*4096);
-        while(i < size[idx]) {
+        while(i < sz) {
             ch = st[i++];
             if(prev != -1 && prev != ch){
                 comp[j++] = prev;
@@ -127,14 +130,13 @@ void *parallelTask(){
         }
         comp[j++] = prev;
         comp[j++] = count;
+
+        pthread_mutex_lock(&mutex);
         completed[idx] = comp;
         completed_size[idx] = j;
-        pthread_mutex_lock(&mutex);
-        idx = nextTask;
-        nextTask++;
+        pthread_cond_signal(&task_completed);
         pthread_mutex_unlock(&mutex);
     }
-    pthread_exit(NULL);
 }
 
 void colateRes(){
