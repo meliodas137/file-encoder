@@ -48,17 +48,26 @@ void createTasks(int argc, char* argv[]){
             int ret = fread(chunk, 1, 4096, fd);
             if(feof(fd) == true) {
                 if(ret > 0) {
+                    pthread_mutex_lock(&mutex);
                     size[iTask] = ret;
                     tasks[iTask++] = chunk;
+                    pthread_cond_signal(&task_created);
+                    pthread_mutex_unlock(&mutex);
                 }
                 else free(chunk);
                 break;
             }
+            pthread_mutex_lock(&mutex);
             size[iTask] = ret;
             tasks[iTask++] = chunk;
+            pthread_cond_signal(&task_created);
+            pthread_mutex_unlock(&mutex);
         }
         fclose(fd);
     }
+    pthread_mutex_lock(&mutex);
+    totalTasks = iTask;
+    pthread_mutex_unlock(&mutex);
     return;
 }
 
